@@ -1,18 +1,18 @@
 #!/usr/bin/python3
 import os
-from tkinter import Tk, StringVar, DoubleVar
-from tkinter.ttk import Button, Label, Progressbar, Entry
+from tkinter import Tk, StringVar, DoubleVar, END, Listbox, NS, EW
+from tkinter.ttk import Button, Label, Progressbar, Entry, Scrollbar
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showinfo
 from filecmp import cmp
 from shutil import copy2
 
-import _thread
+from _thread import start_new_thread
 
 window = Tk()
 
 window.title("Folder syncer")
-window.geometry("525x100")
+window.geometry("550x250")
 
 source_label = Label(window, text="Source folder:")
 source_label.grid(row=0, column=0, columnspan=2)
@@ -47,7 +47,7 @@ chose_target_button.grid(row=1, column=4)
 
 
 def sync_folders_new_thread():
-    _thread.start_new_thread(sync_folders, ())
+    start_new_thread(sync_folders, ())
 
 
 def sync_folders():
@@ -106,7 +106,29 @@ def sync_folders():
 
     added_label.config(text="Added " + str(len(all_added_files)) + " files")
     changed_label.config(text="Changed " + str(len(all_changed_files)) + " files")
-    deleted_label.config(text="Deleted " + str(len(all_deleted_files)) + " files")
+    deleted_label.config(text="Removed " + str(len(all_deleted_files)) + " files")
+
+    if len(all_added_files) > 0:
+        file_commit_message = "ADDED: "
+
+        for p in all_added_files:
+            file_commit_message += p + " "
+        listbox.insert(END, file_commit_message)
+
+    if len(all_changed_files) > 0:
+        file_commit_message = "CHANGED: "
+
+        for p in all_changed_files:
+            file_commit_message += p + " "
+        listbox.insert(END, file_commit_message)
+
+    if len(all_deleted_files) > 0:
+        file_commit_message = "REMOVED: "
+
+        for p in all_deleted_files:
+            file_commit_message += p + " "
+        listbox.insert(END, file_commit_message)
+
 
     to_be_copied = all_added_files + all_changed_files
 
@@ -148,5 +170,17 @@ changed_label.grid(row=3, column=2)
 
 deleted_label = Label(window, text="Deleted 0 files", foreground="red", justify="right")
 deleted_label.grid(row=3, column=4)
+
+
+scrollbar = Scrollbar(window)
+scrollbar.grid(rowspan=5, column=5, sticky=NS)
+
+listbox = Listbox(window)
+listbox.grid(row=4, columnspan=5, sticky=EW)
+
+# attach listbox to scrollbar
+listbox.config(yscrollcommand=scrollbar.set)
+scrollbar.config(command=listbox.yview)
+
 
 window.mainloop()
