@@ -10,10 +10,13 @@ from shutil import copy2
 from _thread import start_new_thread
 
 # ---------- Variables ---------- #
+window = Tk()
 source_path = StringVar()
 target_path = StringVar()
 progress_value = DoubleVar()
-
+pattern_added_files = "Added {0:d} file(s)"
+pattern_changed_files = "Changed {0:d} file(s)"
+pattern_deleted_files = "Deleted {0:d} file(s)"
 
 # ------------ Methods ---------- #
 def chose_source_folder():
@@ -90,9 +93,9 @@ def sync_folders():
             all_changed_files.append(existing_file)
 
     # Write sync status to gui
-    added_label.config(text="Added " + str(len(all_added_files)) + " files")
-    changed_label.config(text="Changed " + str(len(all_changed_files)) + " files")
-    deleted_label.config(text="Removed " + str(len(all_deleted_files)) + " files")
+    added_label.config(text=pattern_added_files.format(len(all_added_files)))
+    changed_label.config(text=pattern_changed_files.format(len(all_changed_files)))
+    deleted_label.config(text=pattern_deleted_files.format(len(all_deleted_files)))
 
     # Add changes to history
     if len(all_added_files) > 0:
@@ -144,8 +147,6 @@ def sync_folders():
 
 
 # ------------- GUI ------------- #
-window = Tk()
-
 # Configure window
 window.title("Folder syncer")
 window.geometry("550x250")
@@ -170,7 +171,6 @@ target_text.grid(row=1, column=3)
 chose_target_button = Button(window, command=chose_target_folder, text="Get target folder")
 chose_target_button.grid(row=1, column=4)
 
-
 # GUI Sync button
 sync_button = Button(window, command=sync_folders_new_thread, text="<- Sync ->")
 sync_button.grid(row=1, column=2)
@@ -180,13 +180,13 @@ progress = Progressbar(window, maximum=100, mode="determinate", length=525, vari
 progress.grid(row=2, column=0, columnspan=5)
 
 # GUI Sync status
-added_label = Label(window, text="Added 0 files", foreground="green", justify="left")
+added_label = Label(window, text=pattern_added_files.format(0), foreground="green", justify="left")
 added_label.grid(row=3, column=0)
 
-changed_label = Label(window, text="Changed 0 files", foreground="orange", justify="center")
+changed_label = Label(window, text=pattern_changed_files.format(0), foreground="orange", justify="center")
 changed_label.grid(row=3, column=2)
 
-deleted_label = Label(window, text="Deleted 0 files", foreground="red", justify="right")
+deleted_label = Label(window, text=pattern_deleted_files.format(0), foreground="red", justify="right")
 deleted_label.grid(row=3, column=4)
 
 # GUI Sync history
