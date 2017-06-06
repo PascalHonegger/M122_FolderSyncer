@@ -1,12 +1,15 @@
 #!/usr/bin/python3
-from os import path, walk, makedirs, remove
+
+# GUI imports
 from tkinter import Tk, StringVar, DoubleVar, END, Listbox, NS, EW
 from tkinter.ttk import Button, Label, Progressbar, Entry, Scrollbar
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showinfo
+# File managements imports
+from os import path, walk, makedirs, remove
 from filecmp import cmp
 from shutil import copy2
-
+# Threading imports
 from _thread import start_new_thread
 
 # ---------- Variables ---------- #
@@ -14,9 +17,17 @@ window = Tk()
 source_path = StringVar()
 target_path = StringVar()
 progress_value = DoubleVar()
+string_added_files = StringVar()
+string_changed_files = StringVar()
+string_deleted_files = StringVar()
 pattern_added_files = "Added {0:d} file(s)"
 pattern_changed_files = "Changed {0:d} file(s)"
 pattern_deleted_files = "Deleted {0:d} file(s)"
+
+string_added_files.set(pattern_added_files.format(0))
+string_changed_files.set(pattern_changed_files.format(0))
+string_deleted_files.set(pattern_deleted_files.format(0))
+
 
 # ------------ Methods ---------- #
 def chose_source_folder():
@@ -93,9 +104,9 @@ def sync_folders():
             all_changed_files.append(existing_file)
 
     # Write sync status to gui
-    added_label.config(text=pattern_added_files.format(len(all_added_files)))
-    changed_label.config(text=pattern_changed_files.format(len(all_changed_files)))
-    deleted_label.config(text=pattern_deleted_files.format(len(all_deleted_files)))
+    string_added_files.set(pattern_added_files.format(len(all_added_files)))
+    string_changed_files.set(pattern_changed_files.format(len(all_changed_files)))
+    string_deleted_files.set(pattern_deleted_files.format(len(all_deleted_files)))
 
     # Add changes to history
     if len(all_added_files) > 0:
@@ -149,55 +160,52 @@ def sync_folders():
 # ------------- GUI ------------- #
 # Configure window
 window.title("Folder syncer")
-window.geometry("550x250")
+window.geometry("560x250")
 
-# GUI Source folder
-source_label = Label(window, text="Source folder:")
-source_label.grid(row=0, column=0)
+# Source folder label
+Label(window, text="Source folder:").grid(row=0, column=0)
 
-source_text = Entry(window, textvariable=source_path)
-source_text.grid(row=1, column=0)
+# Source folder entry
+Entry(window, textvariable=source_path).grid(row=1, column=0)
 
-chose_source_button = Button(window, command=chose_source_folder, text="Get source folder")
-chose_source_button.grid(row=1, column=1)
+# Source folder button
+Button(window, command=chose_source_folder, text="Get source folder").grid(row=1, column=1)
 
-# GUI Target folder
-target_label = Label(window, text="Target folder:")
-target_label.grid(row=0, column=3)
+# Target folder label
+Label(window, text="Target folder:").grid(row=0, column=3)
 
-target_text = Entry(window, textvariable=target_path)
-target_text.grid(row=1, column=3)
+# Target folder entry
+Entry(window, textvariable=target_path).grid(row=1, column=3)
 
-chose_target_button = Button(window, command=chose_target_folder, text="Get target folder")
-chose_target_button.grid(row=1, column=4)
+# Target folder button
+Button(window, command=chose_target_folder, text="Get target folder").grid(row=1, column=4)
 
-# GUI Sync button
-sync_button = Button(window, command=sync_folders_new_thread, text="<- Sync ->")
-sync_button.grid(row=1, column=2)
+# Sync button
+Button(window, command=sync_folders_new_thread, text="<- Sync ->").grid(row=1, column=2)
 
-# GUI Progress
-progress = Progressbar(window, maximum=100, mode="determinate", length=525, variable=progress_value)
-progress.grid(row=2, column=0, columnspan=5)
+# Progress bar
+Progressbar(window, maximum=100, mode="determinate", length=525, variable=progress_value).grid(row=2, column=0, columnspan=5)
 
-# GUI Sync status
-added_label = Label(window, text=pattern_added_files.format(0), foreground="green", justify="left")
-added_label.grid(row=3, column=0)
+# Sync status added
+Label(window, textvariable=string_added_files, foreground="green", justify="left").grid(row=3, column=0)
 
-changed_label = Label(window, text=pattern_changed_files.format(0), foreground="orange", justify="center")
-changed_label.grid(row=3, column=2)
+# Sync status changed
+Label(window, textvariable=string_changed_files, foreground="orange", justify="center").grid(row=3, column=2)
 
-deleted_label = Label(window, text=pattern_deleted_files.format(0), foreground="red", justify="right")
-deleted_label.grid(row=3, column=4)
+# Sync status deleted
+Label(window, textvariable=string_deleted_files, foreground="red", justify="right").grid(row=3, column=4)
 
-# GUI Sync history
+# Sync history scrollbar
 scrollbar = Scrollbar(window)
 scrollbar.grid(rowspan=5, column=5, sticky=NS)
 
+# Sync history list
 listbox = Listbox(window)
 listbox.grid(row=4, columnspan=5, sticky=EW)
 
-# attach listbox to scrollbar
+# Attach listbox to scrollbar
 listbox.config(yscrollcommand=scrollbar.set)
 scrollbar.config(command=listbox.yview)
 
+# Run GUI on main thread
 window.mainloop()
